@@ -1,13 +1,21 @@
 using EphemeralRealTimeChatApp.Data;
+using EphemeralRealTimeChatApp.Hubs;
+using EphemeralRealTimeChatApp.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+
 /* Set up In-memory database */
 builder.Services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("Assignment4"));
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+/* Register Repository */
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+
+/* Add Signal R */
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -29,5 +37,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapHub<MessageHub>("/messagehub");
 
 app.Run();

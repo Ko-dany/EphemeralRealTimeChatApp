@@ -1,0 +1,184 @@
+﻿@{
+    ViewData["Title"] = "Ephemeral Chat";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2 class="text-center mb-4">Ephemeral Real-Time Chat</h2>
+
+            <!-- User Email Input -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="input-group">
+                        <span class="input-group-text">Your Email:</span>
+                        <input type="email" id="userEmail" class="form-control" placeholder="your@email.com" value="test@test.com" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Display -->
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Messages</span>
+                    <span id="status" class="badge bg-secondary">Disconnected</span>
+                </div>
+                <div class="card-body" id="messagesContainer" style="height: 400px; overflow-y: scroll;">
+                    <!-- Messages will appear here -->
+                </div>
+            </div>
+
+            <!-- Message Input -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="input-group">
+                        <input type="text" id="messageInput" class="form-control" placeholder="Type your message..." />
+                        <button class="btn btn-primary" type="button" id="sendButton" onclick="sendMessage()">
+                            <i class="bi bi-send"></i> Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-3" role="alert">
+                <small><i class="bi bi-info-circle"></i> Messages will automatically disappear after 30-60 seconds</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        // SignalR Connection
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/messagehub")
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        // Receive Message Handler
+        connection.on("ReceiveMessage", (userEmail, text, time) => {
+            addMessageToUI(userEmail, text, time);
+        });
+
+        // Start Connection
+        connection.start()
+            .then(() => {
+                updateStatus("Connected", "success");
+                console.log("Connected to SignalR Hub");
+                loadMessages();
+            })
+            .catch(err => {
+                updateStatus("Connection Failed", "danger");
+                console.error("Connection error:", err);
+            });
+
+        // Load existing messages
+        async function loadMessages() {
+            try {
+                const messages = await connection.invoke("LoadMessages");
+                console.log("Loaded messages:", messages);
+
+                const container = document.getElementById("messagesContainer");
+                container.innerHTML = "";
+
+                messages.forEach(msg => {
+                    const time = new Date(msg.sentAtUtc).toLocaleTimeString();
+                    addMessageToUI(msg.userEmail, msg.text, time);
+                });
+            } catch (err) {
+                console.error("Error loading messages:", err);
+            }
+        }
+
+        // Send Message
+        async function sendMessage() {
+            const userEmail = document.getElementById("userEmail").value.trim();
+            const messageText = document.getElementById("messageInput").value.trim();
+
+            if (!userEmail) {
+                alert("Please enter your email");
+                return;
+            }
+
+            if (!messageText) {
+                alert("Please enter a message");
+                return;
+            }
+
+            try {
+                await connection.invoke("SendMessage", userEmail, messageText);
+                document.getElementById("messageInput").value = "";
+                console.log("Message sent");
+            } catch (err) {
+                console.error("Error sending message:", err);
+                alert("Failed to send message");
+            }
+        }
+
+        // Add message to UI
+        function addMessageToUI(userEmail, text, time) {
+            const container = document.getElementById("messagesContainer");
+
+            const messageDiv = document.createElement("div");
+            messageDiv.className = "message-item mb-3 p-3 border rounded bg-light";
+
+            messageDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <strong class="text-primary">${escapeHtml(userEmail)}</strong>
+                    <small class="text-muted">${time}</small>
+                </div>
+                <div class="mt-2">${escapeHtml(text)}</div>
+            `;
+
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Update connection status
+        function updateStatus(text, type) {
+            const statusBadge = document.getElementById("status");
+            statusBadge.textContent = text;
+            statusBadge.className = `badge bg-${type}`;
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Enter key to send
+        document.getElementById("messageInput").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                sendMessage();
+            }
+        });
+    </script>
+}
+
+<style>
+    #messagesContainer {
+        background-color: #f8f9fa;
+    }
+
+    .message-item {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    #messageInput:focus {
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+</style>
