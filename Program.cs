@@ -1,4 +1,10 @@
+using EphemeralRealTimeChatApp.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
+
+/* Set up In-memory database */
+builder.Services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("Assignment4"));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
