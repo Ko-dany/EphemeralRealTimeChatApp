@@ -1,6 +1,7 @@
 using EphemeralRealTimeChatApp.Data;
 using EphemeralRealTimeChatApp.Hubs;
 using EphemeralRealTimeChatApp.Repositories;
+using EphemeralRealTimeChatApp.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,9 @@ builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
 /* Add Signal R */
 builder.Services.AddSignalR();
+
+/* Add Background service */
+builder.Services.AddHostedService<MessageCleanupService>();
 
 var app = builder.Build();
 

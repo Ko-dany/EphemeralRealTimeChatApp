@@ -6,6 +6,6 @@ namespace EphemeralRealTimeChatApp.Repositories
     {
         public Task<List<Message>> GetAllMessagesAsync();
         public Task AddNewMessageAsync(Message message);
-        public Task DeleteOldMessagesAsync(DateTime cutoffTime);
+        public Task<int> DeleteOldMessagesAsync(DateTime cutoffTime);
     }
 }

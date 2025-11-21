@@ -24,11 +24,12 @@ namespace EphemeralRealTimeChatApp.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteOldMessagesAsync(DateTime cutoffTime)
+        public async Task<int> DeleteOldMessagesAsync(DateTime cutoffTime)
         {
             var oldMessages = await _context.Messages.Where(m => m.SentAtUtc < cutoffTime).ToListAsync();
             _context.Messages.RemoveRange(oldMessages);
             await _context.SaveChangesAsync();
+            return oldMessages.Count;
         }
 
     }

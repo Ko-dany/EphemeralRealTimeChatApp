@@ -41,7 +41,7 @@
             </div>
 
             <div class="alert alert-info mt-3" role="alert">
-                <small><i class="bi bi-info-circle"></i> Messages will automatically disappear after 30-60 seconds</small>
+                <small><i class="bi bi-info-circle"></i> Messages will automatically disappear after 30 seconds</small>
             </div>
         </div>
     </div>
@@ -72,6 +72,12 @@
                 updateStatus("Connection Failed", "danger");
                 console.error("Connection error:", err);
             });
+
+        // Clean Up Old Messages
+        connection.on("MessagesCleanedUp", function () {
+            alert("Old messages are deleted")
+            loadMessages();
+        });
 
         // Load existing messages
         async function loadMessages() {
