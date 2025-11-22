@@ -31,7 +31,7 @@ namespace EphemeralRealTimeChatApp.Services
                     }
 
                 }
-                await Task.Delay(TimeSpan.FromMinutes(0.5), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(0.1), stoppingToken);
             }
         }
     }

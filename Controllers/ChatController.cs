@@ -6,7 +6,8 @@ namespace EphemeralRealTimeChatApp.Controllers
     {
         public IActionResult Index()
         {
-            return View();
+            var email = HttpContext.Session.GetString("username");
+            return View(model: email);
         }
     }
 }
