@@ -32,7 +32,7 @@ namespace EphemeralRealTimeChatApp.Hubs
             await Clients.All.SendAsync("ReceiveMessage",
                 message.UserEmail,
                 message.Text,
-                message.SentAtUtc.ToString("HH:mm:ss")
+                message.SentAtUtc.ToString("yyyy-MM-dd, HH:mm:ss")
             );
         }
     }
