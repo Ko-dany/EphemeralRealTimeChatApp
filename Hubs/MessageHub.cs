@@ -6,16 +6,16 @@ namespace EphemeralRealTimeChatApp.Hubs
 {
     public class MessageHub : Hub
     {
-        private readonly IMessageRepository _repository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public MessageHub(IMessageRepository messageRepository)
+        public MessageHub(IUnitOfWork unitOfWork)
         {
-            _repository = messageRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<Message>> LoadMessages()
         {
-            List<Message> messages = await _repository.GetAllMessagesAsync();
+            List<Message> messages = await _unitOfWork.Messages.GetAllMessagesAsync();
             return messages;
         }
 
@@ -27,7 +27,7 @@ namespace EphemeralRealTimeChatApp.Hubs
                 Text = messageText,
                 SentAtUtc = DateTime.UtcNow
             };
-            await _repository.AddNewMessageAsync(message);
+            await _unitOfWork.Messages.AddNewMessageAsync(message);
 
             await Clients.All.SendAsync("ReceiveMessage",
                 message.UserEmail,

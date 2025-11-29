@@ -17,6 +17,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseInMemoryDataba
 
 /* Register Repository */
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 /* Add Signal R */
 builder.Services.AddSignalR();
